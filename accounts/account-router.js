@@ -5,30 +5,26 @@ const db = require("../data/dbConfig.js");
 const router = express.Router();
 
 router.get('/', (req, res) => {
-
+    var { limit } = req.body;
+    var { sortBy } = req.body;
+    var { sortDir } = req.body;
     let query = db("accounts");
 
-    if (req.query.limit)
-        { query = query.limit(parseInt(req.query.limit)); }
+    if(!limit){
+        limit = 10
+    }
+    if(!sortBy){
+        sortBy = 'id'
+    }
+    if(!sortDir){
+        sortDir = 'asc'
+    }
 
-    if (req.query.sortby)
-        {
-            if (req.sortdir)
-                { query = query.orderBy(req.query.sortby, req.query.sortdir); }
-            else
-                { query = query.orderBy(req.query.sortby); }
-        }
-
-    query
-        .then(response => {
-            console.log("GET / response:", response);
-            res.status(200).json({ data: response });
-        })
-        .catch(error => {
-            console.log("GET / error:", error);
-            res.status(500).json({message: "GET / failed."});
-        })
-
+  db("accounts").orderBy(sortBy, sortDir).limit(limit)
+    .then(accounts => res.status(200).json(accounts))
+    .catch(err =>
+      res.status(500).json({ errorMessage: "Error fetching accounts" })
+    );
 });
 
 
